@@ -1,0 +1,65 @@
+{
+  "repo": "gson",
+  "_note": "Pre-registered eval tasks for google/gson (Java). right_files verified against .ai/repo-map.json. One task per type: locate / modify / fix / explain / recall.",
+  "tasks": [
+    {
+      "id": "gson-locate-reflective-factory",
+      "prompt": "Gson serializes and deserializes arbitrary Java objects by reflecting over their fields when no custom adapter is registered. Which file implements the reflection-based TypeAdapterFactory that builds these per-field bound adapters? Name the file.",
+      "right_files": [
+        "gson/src/main/java/com/google/gson/internal/bind/ReflectiveTypeAdapterFactory.java"
+      ],
+      "success_criterion": "Identifies gson/src/main/java/com/google/gson/internal/bind/ReflectiveTypeAdapterFactory.java as the reflective field-binding factory.",
+      "answer_key": "gson/src/main/java/com/google/gson/internal/bind/ReflectiveTypeAdapterFactory.java",
+      "grader": "answer",
+      "notes": "locate — the factory lives under internal/bind among ~20 adapter files, not in the public Gson.java; requires navigating past the public API into the binding layer."
+    },
+    {
+      "id": "gson-modify-gson-stub",
+      "prompt": "In the main Gson class, add a stub public method `public boolean isLenientConfigured() { return false; }` to the `Gson` class, matching the surrounding style. Do not change any other file.",
+      "right_files": [
+        "gson/src/main/java/com/google/gson/Gson.java"
+      ],
+      "success_criterion": "Adds the stub method to the Gson class in gson/src/main/java/com/google/gson/Gson.java only; no other file edited.",
+      "answer_key": "gson/src/main/java/com/google/gson/Gson.java :: com.google.gson.Gson",
+      "grader": "file",
+      "notes": "modify — must locate the core Gson class (Gson.java holds getAdapter, fromJson, toJson) rather than GsonBuilder.java or a stream class."
+    },
+    {
+      "id": "gson-fix-enum-serializedname",
+      "prompt": "Bug: when an enum constant is annotated with @SerializedName (including its alternate names), deserializing that alternate JSON string back to the enum constant fails. Find the single file that builds the enum name-to-constant lookup used during enum deserialization, so the alternate-name handling can be fixed. Name the file.",
+      "right_files": [
+        "gson/src/main/java/com/google/gson/internal/bind/EnumTypeAdapter.java"
+      ],
+      "success_criterion": "Localizes the bug to gson/src/main/java/com/google/gson/internal/bind/EnumTypeAdapter.java, which builds the nameToConstant map honoring @SerializedName and its alternates in read().",
+      "answer_key": "gson/src/main/java/com/google/gson/internal/bind/EnumTypeAdapter.java (nameToConstant built in constructor ~L82-L102 reading @SerializedName value + alternate; read() ~L113 looks up the key)",
+      "grader": "answer",
+      "notes": "fix/localize — enum handling is one adapter among many under internal/bind; the @SerializedName + nameToConstant logic is here, not in the annotations package or ReflectiveTypeAdapterFactory."
+    },
+    {
+      "id": "gson-explain-deserialization-flow",
+      "prompt": "Walk through what happens when application code calls gson.fromJson(json, MyType.class): how does Gson turn the JSON text into a MyType instance? Name the internal steps and the real classes/methods involved, from the public call down to the point where the JSON tokens are actually read.",
+      "right_files": [
+        "gson/src/main/java/com/google/gson/Gson.java",
+        "gson/src/main/java/com/google/gson/TypeAdapter.java",
+        "gson/src/main/java/com/google/gson/stream/JsonReader.java"
+      ],
+      "success_criterion": "Describes that Gson.fromJson wraps the input in a JsonReader, resolves a TypeAdapter for the target type via Gson.getAdapter(TypeToken), then calls TypeAdapter.read(JsonReader) which pulls tokens from the JsonReader to construct the object.",
+      "answer_key": "1) Gson.fromJson(String/Reader, Type) constructs a com.google.gson.stream.JsonReader over the input. 2) It calls Gson.getAdapter(TypeToken<T>) (Gson.java ~L340) to obtain the TypeAdapter<T> for the requested type (cached; built by registered TypeAdapterFactories such as ReflectiveTypeAdapterFactory). 3) It invokes TypeAdapter.read(JsonReader) (abstract, TypeAdapter.java ~L309; the public entry TypeAdapter.fromJson ~L211 delegates here). 4) The adapter's read() consumes tokens from the JsonReader (JsonReader.java: doPeek/nextString/nextName/beginObject etc.) to build and return the T instance. Gson.fromJson then verifies the reader is exhausted and returns the object.",
+      "grader": "judge",
+      "notes": "explain — comprehension of the deserialization pipeline; judge-graded. Key files: Gson.java (fromJson + getAdapter), TypeAdapter.java (read/fromJson), stream/JsonReader.java (token source)."
+    },
+    {
+      "id": "gson-recall-jsonreaderinternalaccess",
+      "prompt": "Within gson/src/main/java, find every file that references the JsonReaderInternalAccess class (its declaration and all usages). List the exact files.",
+      "right_files": [
+        "gson/src/main/java/com/google/gson/internal/JsonReaderInternalAccess.java",
+        "gson/src/main/java/com/google/gson/internal/bind/MapTypeAdapterFactory.java",
+        "gson/src/main/java/com/google/gson/stream/JsonReader.java"
+      ],
+      "success_criterion": "Lists exactly the three files under gson/src/main/java that reference JsonReaderInternalAccess: its declaration (internal/JsonReaderInternalAccess.java), JsonReader.java (installs the accessor), and MapTypeAdapterFactory.java (uses promoteNameToValue via it).",
+      "answer_key": "gson/src/main/java/com/google/gson/internal/JsonReaderInternalAccess.java, gson/src/main/java/com/google/gson/internal/bind/MapTypeAdapterFactory.java, gson/src/main/java/com/google/gson/stream/JsonReader.java",
+      "grader": "answer",
+      "notes": "recall — bounded (3 files) and scoped to gson/src/main/java; verified by grepping JsonReaderInternalAccess across main source."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+The evaluation data in this archive (eval/results, eval/corpus.json
+and eval/tasks) is released under the Creative Commons Attribution 4.0 International
+licence (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/
+
+The two Python files included so the results can be regenerated
+(eval/pool_stats.py and src/beacon/eval/stats.py) are released under the MIT licence.
+
+The corpus repositories retain their own licences and are not redistributed here;
+only their pinned commit identities are recorded.

@@ -1,0 +1,64 @@
+{
+  "repo": "requests",
+  "_note": "Pre-registered eval tasks (WI-5). right_files verified against .ai/repo-map.json + grep at the pinned SHA. One task per type: locate / modify / fix / explain / recall.",
+  "tasks": [
+    {
+      "id": "req-locate-redirects",
+      "prompt": "When a server responds with a 301/302, requests follows the redirect chain and rebuilds each subsequent request. Where is the redirect-resolution logic (the generator that walks the redirect chain and yields each new response) implemented? Name the file.",
+      "right_files": [
+        "src/requests/sessions.py"
+      ],
+      "success_criterion": "Identifies src/requests/sessions.py as the file containing the redirect-resolution logic (SessionRedirectMixin.resolve_redirects).",
+      "answer_key": "src/requests/sessions.py :: SessionRedirectMixin.resolve_redirects",
+      "grader": "answer",
+      "notes": "locate — redirect handling lives on SessionRedirectMixin in sessions.py, not in a 'redirects' file; the word 'redirect' does not map to the filename, so it requires tracing the Session machinery."
+    },
+    {
+      "id": "req-modify-preparedrequest",
+      "prompt": "Add a stub method `def path_url_length(self):` that does `return 0` to the PreparedRequest class, matching the surrounding style. Put it in the correct file and change no other file.",
+      "right_files": [
+        "src/requests/models.py"
+      ],
+      "success_criterion": "Adds the stub method to the PreparedRequest class in src/requests/models.py only; no other file edited.",
+      "answer_key": "src/requests/models.py :: PreparedRequest",
+      "grader": "file",
+      "notes": "modify — PreparedRequest is one of several request/response classes in models.py; the class name is given but the file (models.py, not sessions.py or api.py) must be located."
+    },
+    {
+      "id": "req-fix-encoding",
+      "prompt": "Response.text sometimes decodes the body with the wrong character set. The bug is in the helper that derives the encoding from a response's Content-Type header. Find the file that contains that helper and name it.",
+      "right_files": [
+        "src/requests/utils.py"
+      ],
+      "success_criterion": "Localizes the Content-Type-to-encoding helper (get_encoding_from_headers) to src/requests/utils.py.",
+      "answer_key": "src/requests/utils.py :: get_encoding_from_headers",
+      "grader": "answer",
+      "notes": "fix/localize — get_encoding_from_headers lives in utils.py, not models.py where Response.text is defined; requires tracing where the encoding actually comes from."
+    },
+    {
+      "id": "req-explain-lifecycle",
+      "prompt": "Walk through the lifecycle of a call to requests.Session.request(...): what are the main internal steps and functions, from the high-level request call down to where the HTTP transport actually happens?",
+      "right_files": [
+        "src/requests/sessions.py",
+        "src/requests/adapters.py"
+      ],
+      "success_criterion": "Describes that Session.request builds a Request, calls prepare_request to get a PreparedRequest, then Session.send dispatches to the transport adapter, which for HTTP is HTTPAdapter.send where the urllib3 connection actually sends the request; resolve_redirects handles the redirect chain.",
+      "answer_key": "Session.request (sessions.py) constructs a Request and calls self.prepare_request -> PreparedRequest; then Session.send (sessions.py) selects the adapter via get_adapter and calls adapter.send; HTTPAdapter.send (adapters.py) obtains a urllib3 connection (get_connection_with_tls_context) and performs the transfer, returning a Response via build_response; Session.send then feeds through SessionRedirectMixin.resolve_redirects for any redirect chain.",
+      "grader": "judge",
+      "notes": "explain — comprehension of the request pipeline spanning sessions.py and adapters.py; judge-graded against the reference chain of real functions/classes."
+    },
+    {
+      "id": "req-recall-extract-cookies",
+      "prompt": "Find every source file that CALLS the extract_cookies_to_jar function (exclude the file where it is defined). List them.",
+      "right_files": [
+        "src/requests/adapters.py",
+        "src/requests/auth.py",
+        "src/requests/sessions.py"
+      ],
+      "success_criterion": "Lists exactly the files that call extract_cookies_to_jar: src/requests/adapters.py, src/requests/auth.py, and src/requests/sessions.py (cookies.py, the definition site, excluded).",
+      "answer_key": "src/requests/adapters.py, src/requests/auth.py, src/requests/sessions.py",
+      "grader": "answer",
+      "notes": "recall — enumerate call sites; verified by grepping extract_cookies_to_jar across src/, distinguishing the definition in cookies.py from the three call sites."
+    }
+  ]
+}

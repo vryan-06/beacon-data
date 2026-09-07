@@ -1,0 +1,63 @@
+{
+  "repo": "express",
+  "_note": "Pre-registered eval tasks. right_files verified to exist under corpus/express/lib/ and in .ai/repo-map.json. Express 5.x: routing/dispatch lives in the external 'router' npm package, so there is no lib/router/ — tasks are file-level over the real flat lib/ layout. One task per type: locate / modify / fix / explain / recall.",
+  "tasks": [
+    {
+      "id": "exp-locate-view-rendering",
+      "prompt": "Server-side view/template rendering (locating a template file on disk by name and invoking its engine's render callback) is implemented by a dedicated class in this library. Which file under lib/ defines that View class and its lookup/render logic?",
+      "right_files": [
+        "lib/view.js"
+      ],
+      "success_criterion": "Identifies lib/view.js as the file implementing the View class (View.prototype.lookup / View.prototype.render).",
+      "answer_key": "lib/view.js",
+      "grader": "answer",
+      "notes": "file-level — rendering is split across app.render (application.js), res.render (response.js) and the View class; the actual on-disk lookup + engine invocation is only in lib/view.js, requiring navigation past the two prototype methods that merely delegate to it."
+    },
+    {
+      "id": "exp-modify-response-proto",
+      "prompt": "The HTTP response prototype is extended in one file under lib/ (methods like res.json, res.sendFile, res.render are attached to a `res` object). Add a stub method `res.noop = function noop() { return this; };` to that response-prototype file, matching the existing style. Do not change any other file.",
+      "right_files": [
+        "lib/response.js"
+      ],
+      "success_criterion": "Adds the res.noop stub to the response prototype in lib/response.js only; no other file edited.",
+      "answer_key": "lib/response.js (res.noop attached to the `res` response prototype, alongside res.json/res.sendFile/res.render)",
+      "grader": "file",
+      "notes": "file-level — must distinguish the response prototype (lib/response.js) from the request prototype (lib/request.js) and the app prototype (lib/application.js), all of which attach methods to a shared object; sparse index has no exported symbols to shortcut this."
+    },
+    {
+      "id": "exp-fix-etag-config",
+      "prompt": "A bug report says the app's `etag` setting is not being turned into a working ETag function: when a user sets a custom `etag` option the wrong compiled function is used. The helper that compiles the `etag` setting value into an ETag generator function (compileETag and friends) lives in one file under lib/. Which file must be edited to fix this?",
+      "right_files": [
+        "lib/utils.js"
+      ],
+      "success_criterion": "Localizes the compileETag / ETag-setting compilation helper to lib/utils.js.",
+      "answer_key": "lib/utils.js (exports.compileETag / compileQueryParser / compileTrust — the setting-to-function compilers consumed by lib/application.js)",
+      "grader": "answer",
+      "notes": "file-level — application.js consumes compileETag via require('./utils'), so a naive reader stops at application.js; the actual compilation logic is defined only in lib/utils.js, requiring an import trace."
+    },
+    {
+      "id": "exp-explain-request-dispatch",
+      "prompt": "Walk through how an incoming HTTP request is routed to a handler in this Express version. Start from where the application function is created and describe, in order, the real files and functions involved until control reaches the router that dispatches to a route handler.",
+      "right_files": [
+        "lib/express.js",
+        "lib/application.js"
+      ],
+      "success_criterion": "Describes: createApplication in lib/express.js builds the `app` function whose body calls app.handle; app.handle in lib/application.js runs (sets X-Powered-By, fixes req/res prototypes) then calls this.router.handle(req, res, done); `this.router` is the lazily-created Router (from the external 'router' package, defined via the getter in application.js) which performs layer matching and dispatch to the route handler.",
+      "answer_key": "1) lib/express.js::createApplication creates `app = function(req,res,next){ app.handle(req,res,next); }`, mixes in the application prototype (proto) and EventEmitter, and sets app.request/app.response. 2) On a request the app function calls app.handle. 3) lib/application.js::app.handle builds the finalhandler `done`, sets the X-Powered-By header, wires req.res/res.req, re-parents req/res onto app.request/app.response prototypes, then calls this.router.handle(req, res, done). 4) `this.router` is a lazily instantiated `new Router(...)` from the external 'router' npm package, created by the getter defined in application.js (Object.defineProperty(this,'router',...)). 5) That Router matches layers/routes and dispatches to the matched route handler. (Actual layer/route dispatch code lives in the external 'router' package, not under lib/.)",
+      "grader": "judge",
+      "notes": "explain — comprehension of the dispatch chain across lib/express.js and lib/application.js; must correctly note that final layer dispatch is delegated to the external 'router' package rather than a lib/router/ file (which does not exist in this v5 layout)."
+    },
+    {
+      "id": "exp-recall-utils-requirers",
+      "prompt": "Find every file under lib/ that requires the internal './utils' module (i.e. `require('./utils')`). List them.",
+      "right_files": [
+        "lib/application.js",
+        "lib/response.js"
+      ],
+      "success_criterion": "Lists exactly the files under lib/ that require('./utils'): lib/application.js and lib/response.js.",
+      "answer_key": "lib/application.js, lib/response.js",
+      "grader": "answer",
+      "notes": "file-level — enumerate usage sites; verified by grepping require('./utils') under lib/ (request.js/view.js/express.js do NOT require it), so a plausible-but-wrong over-inclusion is easy without navigation."
+    }
+  ]
+}

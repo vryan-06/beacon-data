@@ -1,0 +1,62 @@
+{
+  "repo": "magic_enum",
+  "_note": "Pre-registered eval tasks (WI-5). right_files verified against .ai/repo-map.json at the pinned SHA. One task per type: locate / modify / fix / explain / recall.",
+  "tasks": [
+    {
+      "id": "me-locate-flags",
+      "prompt": "Where is flag-enum support (bitwise flag operations and flag-aware name/cast helpers) implemented in this library? Name the header file.",
+      "right_files": [
+        "include/magic_enum/magic_enum_flags.hpp"
+      ],
+      "success_criterion": "Identifies include/magic_enum/magic_enum_flags.hpp as the flags implementation header.",
+      "answer_key": "include/magic_enum/magic_enum_flags.hpp",
+      "grader": "answer",
+      "notes": "locate — flags live in a dedicated header, not the core magic_enum.hpp; requires navigating the 9 headers rather than one filename grep."
+    },
+    {
+      "id": "me-modify-containers",
+      "prompt": "In the enum-container header, add a stub member function `constexpr bool empty() const noexcept { return false; }` to the fixed-size `array` container class, matching the existing style. Do not change any other file.",
+      "right_files": [
+        "include/magic_enum/magic_enum_containers.hpp"
+      ],
+      "success_criterion": "Adds the stub method to the array container class in magic_enum_containers.hpp only; no other file edited.",
+      "answer_key": "include/magic_enum/magic_enum_containers.hpp :: magic_enum::containers::array",
+      "grader": "file",
+      "notes": "modify — must locate the containers header and the array class among the container variants."
+    },
+    {
+      "id": "me-fix-range",
+      "prompt": "Enum values outside the default reflection range are silently not reflected. Find the code that bounds the reflection range (the MAGIC_ENUM_RANGE_MIN / MAGIC_ENUM_RANGE_MAX handling) so the bound can be widened, and name the file.",
+      "right_files": [
+        "include/magic_enum/magic_enum.hpp"
+      ],
+      "success_criterion": "Locates the range_min / range_max reflection-range bounding logic in magic_enum.hpp.",
+      "answer_key": "include/magic_enum/magic_enum.hpp (range_min ~L279, range_max ~L285; reflected_min/reflected_max apply the bound)",
+      "grader": "answer",
+      "notes": "fix/localize — the range logic is one place among 1200+ symbols in the core header."
+    },
+    {
+      "id": "me-explain-enum-name",
+      "prompt": "Explain how a runtime call to magic_enum::enum_name(value) produces the enum's name string: what internal steps and functions are involved, from the call to the returned string_view?",
+      "right_files": [
+        "include/magic_enum/magic_enum.hpp"
+      ],
+      "success_criterion": "Describes that enum_name(value) uses enum_index to find the index, then returns names_v[index]; names_v is a constexpr array built from enum_name_v<E,V>, which extracts the name via compile-time reflection.",
+      "answer_key": "enum_name(value) -> detail::enum_index<D,S>(value) yields the index -> returns detail::names_v<D,S>[*index]. names_v is built by detail::names(index_sequence) from enum_name_v<E, values_v[J]>. enum_name_v<E,V> computes the name at compile time via reflection (detail::n<V>() parsing __PRETTY_FUNCTION__/__FUNCSIG__), with customize-hook support.",
+      "grader": "judge",
+      "notes": "explain — comprehension of the reflection pipeline; judge-graded against the reference answer."
+    },
+    {
+      "id": "me-recall-flags-tests",
+      "prompt": "Find every test file that exercises flag-enum support (i.e. includes or uses the flags header). List them.",
+      "right_files": [
+        "test/test_flags.cpp",
+        "test/test_aliases.cpp"
+      ],
+      "success_criterion": "Lists exactly the test files that use the flags header: test/test_flags.cpp and test/test_aliases.cpp.",
+      "answer_key": "test/test_flags.cpp, test/test_aliases.cpp",
+      "grader": "answer",
+      "notes": "recall — enumerate usage sites; verified by grepping for magic_enum_flags.hpp includes under test/."
+    }
+  ]
+}

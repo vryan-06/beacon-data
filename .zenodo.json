@@ -1,0 +1,28 @@
+{
+  "access_right": "open",
+  "creators": [
+    {
+      "affiliation": "Independent researcher, Mumbai, India",
+      "name": "Valiaparambil, Ryan",
+      "orcid": "0009-0007-7533-8208"
+    },
+    {
+      "affiliation": "Independent researcher, Mumbai, India",
+      "name": "Yadav, Shubham",
+      "orcid": "0009-0008-7802-6733"
+    }
+  ],
+  "description": "<p>Raw run data, pinned corpus, and pre-registered tasks with answer keys behind every number in the paper <em>Query, Don't Read: When a Repository Context Layer Saves an AI Agent Tokens, and When It Doesn't</em>.</p><p>Reading a generated repository context layer into an AI coding agent's context is token neutral. Querying the same index through lookup tools cuts agent tokens by a mean of 27% per task on a cost-efficient model tier (18/20 tasks improved, paired Wilcoxon p = 0.0003), with correctness preserved. Repeating the query protocol on a stronger tier gives a mean of -1% over the same 20 tasks (11/20, p = 0.5628), because the stronger model already explores the bare repository efficiently.</p><p>The archive holds per-run token, turn and verdict records, full agent transcripts, the corpus pinned by commit hash, the five pre-registered tasks per repository, and the script that regenerates the reported statistics from the records using the standard library alone. This is the evaluation data, not the tool that generates the context layer; the tool is described in the paper and is not included in this deposit.</p><p>The pooled statistics are deterministic given these files. The agent-loop measurements themselves are not reproducible byte for byte: the evaluation drives a real multi-turn agent whose sampling is non-deterministic and whose hosted models change over time, so a fresh run should reproduce the direction and rough magnitude rather than these exact token counts. That is why the raw records and transcripts are archived here rather than only the summary.</p><p>Licence: the evaluation data is released under CC BY 4.0. The two Python files included so the results can be regenerated (eval/pool_stats.py and src/beacon/eval/stats.py) are released under the MIT licence. The record-level licence field states CC BY 4.0, which covers the data itself; see LICENSE in the archive for the split. The corpus repositories retain their own licences and are not redistributed here, only their pinned commit identities.</p>",
+  "keywords": [
+    "AI coding agents",
+    "context engineering",
+    "static analysis",
+    "tree-sitter",
+    "Model Context Protocol",
+    "token efficiency",
+    "developer tools"
+  ],
+  "license": "cc-by-4.0",
+  "title": "Evaluation data: \"Query, Don't Read: When a Repository Context Layer Saves an AI Agent Tokens, and When It Doesn't\"",
+  "upload_type": "dataset"
+}

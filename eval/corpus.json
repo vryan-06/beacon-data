@@ -1,0 +1,12 @@
+{
+  "_note": "WI-5 evaluation corpus: open-source repos, pinned to the exact commit indexed. Selection criteria (state in the paper): popular + recognizable, permissive license (MIT/Apache/BSD), clear module structure, moderate size, spanning distinct languages. counts are from a Stage-1 (deterministic, no-LLM) `beacon scan` at the pinned SHA.",
+  "_active": "4 repos run for now: magic_enum, requests, cobra, gson. express is DEFERRED (deferred:true) — v1's JS symbol extraction is too sparse to give a fair result; revisit later (keep as a documented limitation, or swap for a strong-index language).",
+  "corpus": [
+    {"repo": "magic_enum", "url": "https://github.com/Neargye/magic_enum", "sha": "591b64351ea8442f8b8fa044ff335d6943e8e6e0", "lang": "cpp", "license": "MIT", "files": 77, "symbols": 1248, "tasks": "eval/tasks/magic_enum.json"},
+    {"repo": "requests", "url": "https://github.com/psf/requests", "sha": "8f8b212de8c2129d7954c6cd373762880375620a", "lang": "python", "license": "Apache-2.0", "files": 129, "symbols": 807, "tasks": "eval/tasks/requests.json"},
+    {"repo": "cobra", "url": "https://github.com/spf13/cobra", "sha": "adbc8813901bba65827259daa8e22ff94ec1f30e", "lang": "go", "license": "Apache-2.0", "files": 66, "symbols": 617, "tasks": "eval/tasks/cobra.json"},
+    {"repo": "gson", "url": "https://github.com/google/gson", "sha": "dae37cf0fe12235b76fb09f01118a0a8c8823f42", "lang": "java", "license": "Apache-2.0", "files": 313, "symbols": 4177, "tasks": "eval/tasks/gson.json"},
+    {"repo": "fmt", "url": "https://github.com/fmtlib/fmt", "sha": "0c9fce2ffefecfdce794e1859584e25877b7b592", "lang": "cpp", "license": "MIT", "files": 131, "symbols": 6137, "tasks": "eval/tasks/fmt.json", "note": "tag 11.0.2; added 2026-08-29 for the C++ MCP-first datapoint."},
+    {"repo": "express", "url": "https://github.com/expressjs/express", "sha": "023767fe9872e029271df1418f73401bff20ff40", "lang": "javascript", "license": "MIT", "files": 213, "symbols": 127, "tasks": "eval/tasks/express.json", "deferred": true, "caveat": "DEFERRED for now (user decision). v1's JavaScript symbol extraction is sparse here (127 symbols, 0 exported across 213 files) — CommonJS module.exports isn't captured by the tags query. Not run in the current sweep. Revisit later: keep as an honest limitation datapoint, or swap for a TypeScript/other-language repo. Task file (express.json) is retained."}
+  ]
+}

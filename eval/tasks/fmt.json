@@ -1,0 +1,49 @@
+{
+  "tasks": [
+    {
+      "id": "fmt-locate-dragonbox-to-decimal",
+      "prompt": "In the fmt library, floating-point values are converted to their shortest round-trippable decimal representation using the Dragonbox algorithm (the `to_decimal` function in the `dragonbox` namespace that returns a `decimal_fp<T>`). The public declaration lives in format.h, but which single file contains the actual algorithm implementation (the function body with the Schubfach multiplier / shorter-interval logic)? Answer by naming the file.",
+      "right_files": ["include/fmt/format-inl.h"],
+      "success_criterion": "The agent names include/fmt/format-inl.h as the file containing the dragonbox::to_decimal implementation.",
+      "notes": "format.h only declares `FMT_API auto to_decimal(...)` (L1550) and defines the decimal_fp struct; the real algorithm body is only in format-inl.h, so naming format.h or base.h is wrong.",
+      "answer_key": "include/fmt/format-inl.h (template to_decimal in namespace dragonbox at ~L1248; namespace dragonbox opens at L176)",
+      "grader": "answer"
+    },
+    {
+      "id": "fmt-modify-memory-buffer-is-empty",
+      "prompt": "In the fmt library, add a small public member function `bool is_empty() const` to the `basic_memory_buffer` class template that returns whether the buffer currently holds no elements (i.e. size() == 0). Edit only the one file that defines this class.",
+      "right_files": ["include/fmt/format.h"],
+      "success_criterion": "The agent adds an is_empty()-style accessor to basic_memory_buffer in include/fmt/format.h and edits no other file.",
+      "notes": "basic_memory_buffer is defined only in include/fmt/format.h (L835); base.h defines the unrelated base `detail::buffer<T>` and os.h defines a different `file_buffer`/grow, so editing those is wrong.",
+      "answer_key": "include/fmt/format.h (class basic_memory_buffer at L835; existing public methods resize/reserve/append end at ~L933)",
+      "grader": "file"
+    },
+    {
+      "id": "fmt-fix-file-size-largefile",
+      "prompt": "A user of fmt's OS layer reports that calling `size()` on an `fmt::file` opened on a file larger than 4 GB returns a wrong (truncated or garbage) byte count on Windows, while POSIX builds are fine. The suspicion is in how the 64-bit size is reconstructed from the high and low 32-bit halves returned by the platform API. Which file and function is responsible for computing a file's size and should be inspected? Answer by naming the file and function.",
+      "right_files": ["src/os.cc"],
+      "success_criterion": "The agent names src/os.cc and the file::size() function as responsible for computing the file size.",
+      "notes": "The Windows branch combining GetFileSize's size_upper/size_lower lives only in file::size() in src/os.cc (L243); os.h merely declares `long long size() const`, and file::read/write are separate functions.",
+      "answer_key": "src/os.cc (long long file::size() const at L243; Windows high/low DWORD combine at L256-257)",
+      "grader": "answer"
+    },
+    {
+      "id": "fmt-explain-format-to-output-flow",
+      "prompt": "Explain end-to-end what happens in the fmt library when a caller writes `fmt::format(\"{}\", x)`: how the format string and argument are captured into type-erased format_args, how the arguments are routed through vformat/vformat_to into a memory buffer, the role of formatter specializations in writing each argument, and how the buffer is finally turned into the returned std::string. Reference the key functions and the files they live in.",
+      "right_files": ["include/fmt/format.h", "include/fmt/base.h"],
+      "success_criterion": "The agent traces format() -> make_format_args -> vformat -> detail::vformat_to(buffer) -> formatter, ending in to_string, naming format.h and base.h as the files involved.",
+      "notes": "The correct chain is format() in format.h (L4363) building args via make_format_args (base.h L2016) and calling vformat (format-inl.h L1431) which calls the core detail::vformat_to(buffer<Char>&) in base.h (L2811); a wrong answer stays vague or points only at os.cc/printf.h.",
+      "answer_key": "include/fmt/format.h (format at L4363 -> vformat) and include/fmt/base.h (make_format_args L2016, core detail::vformat_to at L2811); vformat body in format-inl.h L1431 ends with to_string(buffer)",
+      "grader": "judge"
+    },
+    {
+      "id": "fmt-recall-format-error-code-uses",
+      "prompt": "In the fmt library, find every place that the internal helper function `format_error_code` (which writes an 'error <code>: <message>' string into a char buffer without allocating) is defined, declared, and called. List all the files and the sites you find.",
+      "right_files": ["include/fmt/format-inl.h", "include/fmt/format.h", "src/os.cc"],
+      "success_criterion": "The agent lists the definition in format-inl.h, the declaration in format.h, and both call sites (format-inl.h and src/os.cc).",
+      "notes": "format_error_code appears in exactly three source files at this commit: defined in format-inl.h L41, declared in format.h L3863, and called from format-inl.h L1423 (inside format_system_error) and src/os.cc L159 (inside format_windows_error) — listing only the definition or missing the os.cc call site is incomplete.",
+      "answer_key": "include/fmt/format-inl.h (definition L41; call at L1423), include/fmt/format.h (FMT_API declaration L3863), src/os.cc (call at L159)",
+      "grader": "answer"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "repo": "cobra",
+  "_note": "Pre-registered eval tasks for spf13/cobra. right_files verified against .ai/repo-map.json at the pinned SHA and by grepping the source. One task per type: locate / modify / fix / explain / recall.",
+  "tasks": [
+    {
+      "id": "cob-locate-runtime-completion",
+      "prompt": "Cobra generates completion scripts for several shells, but it also computes the actual completion candidates at runtime via a hidden `__complete` command that the shell scripts call back into. Which single Go file implements that runtime completion logic (the hidden command handler and the routine that computes the candidate list)? Name the file.",
+      "right_files": [
+        "completions.go"
+      ],
+      "success_criterion": "Identifies completions.go as the file implementing runtime completion (initCompleteCmd / getCompletions / ShellCompRequestCmd), not one of the per-shell script generators.",
+      "answer_key": "completions.go (ShellCompRequestCmd = \"__complete\" at ~L31, initCompleteCmd at ~L231, getCompletions at ~L316)",
+      "grader": "answer",
+      "notes": "locate — must distinguish the runtime engine (completions.go) from the six script generators (bash_completions.go, bash_completionsV2.go, zsh_completions.go, fish_completions.go, powershell_completions.go, shell_completions.go) whose names all match a naive 'completion' grep."
+    },
+    {
+      "id": "cob-modify-command-stub",
+      "prompt": "In the file that defines the core `Command` type, add a stub method to `*Command` matching the existing method style: `func (c *Command) IsExperimental() bool { return false }`. Do not modify any other file.",
+      "right_files": [
+        "command.go"
+      ],
+      "success_criterion": "Adds the IsExperimental stub method to the *Command receiver in command.go only; no other file edited.",
+      "answer_key": "command.go :: (c *Command) IsExperimental — the Command type and its ~130 methods live in command.go",
+      "grader": "file",
+      "notes": "modify — the Command struct and all its methods are in command.go; requires locating it among ~40 Go source files (command_win.go / command_notwin.go are platform shims, not the definition)."
+    },
+    {
+      "id": "cob-fix-args-count",
+      "prompt": "A user reports that a command configured with a positional-args validator such as `ExactArgs(2)` or `RangeArgs(1, 3)` is accepting or rejecting the wrong number of positional arguments. Which single Go file contains the positional-argument count-validation logic that would need to be fixed?",
+      "right_files": [
+        "args.go"
+      ],
+      "success_criterion": "Localizes the positional-args validators (ExactArgs, RangeArgs, MinimumNArgs, MaximumNArgs, NoArgs) to args.go.",
+      "answer_key": "args.go (PositionalArgs type + ExactArgs ~L107, RangeArgs ~L117, MinimumNArgs ~L87, MaximumNArgs ~L97)",
+      "grader": "answer",
+      "notes": "fix/localize — the count checks are the PositionalArgs constructors in args.go, distinct from where they are invoked (command.go::ValidateArgs)."
+    },
+    {
+      "id": "cob-explain-execute-flow",
+      "prompt": "Walk through what happens when a program calls `rootCmd.Execute()`: how does control flow from that entry point to the user's `Run`/`RunE` handler? Name the real functions/methods involved, in order.",
+      "right_files": [
+        "command.go"
+      ],
+      "success_criterion": "Describes: Execute() delegates to ExecuteC(); ExecuteC() locates the target command (via Find/Traverse) and parses flags, then calls the target command's execute(); execute() runs the PersistentPreRun(E)/PreRun(E) hooks, then dispatches to RunE if set else Run, then runs PostRun(E)/PersistentPostRun(E).",
+      "answer_key": "(c *Command).Execute() [command.go ~L1070] simply returns c.ExecuteC() results. ExecuteC() [~L1084] resolves the actual command to run via c.Find/Traverse, wires args, and invokes cmd.execute(flags). (c *Command).execute() [~L905] validates args (ValidateArgs/ValidateRequiredFlags/ValidateFlagGroups), then runs PersistentPreRunE|PersistentPreRun (walking parents), PreRunE|PreRun, then the main dispatch: if c.RunE != nil call c.RunE(c, args) else c.Run(c, args) [~L1014-1019], then PostRunE|PostRun and PersistentPostRunE|PersistentPostRun. Errors propagate back up through ExecuteC to Execute.",
+      "grader": "judge",
+      "notes": "explain — Execute → ExecuteC → execute → Run/RunE dispatch; all three methods plus the hooks and the RunE-else-Run branch are in command.go."
+    },
+    {
+      "id": "cob-recall-validateflaggroups",
+      "prompt": "The method `ValidateFlagGroups` (on `*Command`) enforces mutually-exclusive / required-together / one-required flag-group rules. List every Go file in the repository that references it (its definition, its call site in the execution path, and its test).",
+      "right_files": [
+        "flag_groups.go",
+        "command.go",
+        "flag_groups_test.go"
+      ],
+      "success_criterion": "Lists exactly flag_groups.go (definition), command.go (call site during execute), and flag_groups_test.go (test) — no more, no fewer.",
+      "answer_key": "flag_groups.go, command.go, flag_groups_test.go",
+      "grader": "answer",
+      "notes": "recall — verified by `grep -rl 'ValidateFlagGroups(' *.go`, which returns exactly these three files."
+    }
+  ]
+}
